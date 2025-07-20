@@ -1,4 +1,5 @@
 from typing import List, Dict, Set
+from .result import CompetitionResults
 
 
 class WCAPerson:
@@ -21,14 +22,14 @@ class WCAPerson:
 
         self.competitions: List[str] = wca_data.get("competitionIds", [])
         self.number_of_competitions: int = wca_data.get("numberOfCompetitions", 0)
-        self.results_raw: Dict = wca_data.get("results", {})
 
-        self.rank_singles = {
-            r["eventId"]: r for r in wca_data.get("rank", {}).get("singles", [])
+        self.competitions_results: Dict[str, CompetitionResults] = {
+            competition_id: CompetitionResults(competition_id, all_event_results)
+            for competition_id, all_event_results in wca_data.get("results", {}).items()
         }
-        self.rank_averages = {
-            r["eventId"]: r for r in wca_data.get("rank", {}).get("averages", [])
-        }
+
+        self.rank_singles = self._parse_ranks(wca_data, "singles")
+        self.rank_averages = self._parse_ranks(wca_data, "averages")
 
         self.medals = wca_data.get("medals")
 
@@ -41,6 +42,22 @@ class WCAPerson:
             set:
         """
         return set(self.rank_averages.keys()).union(self.rank_singles.keys())
+
+    @staticmethod
+    def _parse_ranks(wca_data: List[Dict], metric_name: str) -> Dict:
+        """
+        Parse rank data.
+
+        Args:
+            rank_data List[Dict]: List of dicts with ranks.
+            metric_name (str): `averages` or `singles`.
+        
+        Returns:
+            Dict: Dict of the form `{"event_id": {...}}`
+        """
+        return {
+            r["eventId"]: r for r in wca_data.get("rank", {}).get(metric_name, [])
+        }
 
     def get_best_single(self, event_id: str) -> int:
         """
@@ -83,7 +100,7 @@ class WCAPerson:
         """
         return self.rank_singles.get(event_id, {}).get("rank", {}).get(level)
 
-    def get_rank_average(self, event_id: str, level: str) -> int:
+    def get_rank_average(self, event_id: str, level: str) -> int | None:
         """
         Returns the rank of average by event, and by level, e.g.,
         by World, Continent, or Country.
@@ -97,3 +114,66 @@ class WCAPerson:
                 or event_id/level is not valid.
         """
         return self.rank_singles.get(event_id, {}).get("rank", {}).get(level)
+
+    def get_competition_best_singles(self, event_id: str) -> Dict[str, int]:
+        """
+        Returns the best singles for all competitions.
+
+        Args:
+            event_id (int): WCA event ID, such as "222", "333", etc.
+
+        Returns:
+            dict[str, int]: Competition id and best single.
+        """
+        best_singles_by_comp = {
+            comp_id: comp_results.get_best_single_overall(event_id)
+            for comp_id, comp_results in self.competitions_results.items()
+            if comp_results.get_best_single_overall(event_id)
+        }
+
+        best_not_none_singles = {
+            comp_id: best_single
+            for comp_id, best_single in best_singles_by_comp.items()
+            if isinstance(best_single, int)
+        }
+
+        return best_not_none_singles
+
+    def get_best_averages_of_all_competitions(self, event_id: str) -> Dict[str, int]:
+        """
+        Returns the best averages for all competitions.
+
+        Args:
+            event_id (int): WCA event ID, such as "222", "333", etc.
+
+        Returns:
+            dict[str, int]: Competition id and best average.
+        """
+        best_avgs_by_comp = {
+            comp_id: comp_results.get_best_average_overall(event_id)
+            for comp_id, comp_results in self.competitions_results.items()
+            if comp_results.get_best_single_overall(event_id)
+        }
+
+        best_not_none_avgs = {
+            comp_id: best_avg
+            for comp_id, best_avg in best_avgs_by_comp.items()
+            if isinstance(best_avg, int)
+        }
+
+        return best_not_none_avgs
+
+    def get_all_singles_by_competition(self, event_id: str) -> Dict[str, List[int]]:
+        """
+        Returns a dict of lists with comps id as keys, and a list of all its singles.
+
+        Args:
+            event_id (int): WCA event ID, such as "222", "333", etc.
+        
+        Returns:
+            (dict[str, List[int]]): Competition id and best average.
+        """
+        return {
+            comp_id: comp_results.get_all_singles(event_id)
+            for comp_id, comp_results in self.competitions_results.items()
+        }

@@ -1,5 +1,5 @@
 from typing import Dict, Set, List, Any
-
+from itertools import chain
 
 class CompetitionResults:
     def __init__(self, competition_id: str, all_event_results: Dict):
@@ -77,12 +77,14 @@ class CompetitionResults:
             return None
 
         bests_by_round = [r.get("best") for r in event_result]
-        not_dnf_bests = [b for b in bests_by_round if b > 0]
 
-        if not_dnf_bests:
-            return min(not_dnf_bests)
-        else:
+        if all(best_single == 0 for best_single in bests_by_round):
+            return 0
+        elif all(best_single == -1 for best_single in bests_by_round):
             return -1
+        else:
+            not_dnf_bests = [b for b in bests_by_round if b > 0]
+            return min(not_dnf_bests)
 
     def get_best_single_by_round(self, event_id: str, round_name: str) -> int:
         """
@@ -110,7 +112,7 @@ class CompetitionResults:
             event_id (str): WCA event ID, such as "222", "333", etc.
 
         Returns:
-            int: Best average overall
+            int: Best average overall, if -1
         """
 
         event_result: List[Dict] = self.get_event_results(event_id)
@@ -119,9 +121,30 @@ class CompetitionResults:
             return None
 
         avgs_by_round = [r.get("average") for r in event_result]
-        not_dnf_avgs = [b for b in avgs_by_round if b > 0]
 
-        if not_dnf_avgs:
-            return min(not_dnf_avgs)
-        else:
+        if all(avg == 0 for avg in avgs_by_round):
+            return 0
+        elif all(avg == -1 for avg in avgs_by_round):
             return -1
+        else:
+            not_dnf_avgs = [b for b in avgs_by_round if b > 0]
+            return min(not_dnf_avgs)
+
+    def get_all_singles(self, event_id: str) -> List[int]:
+        """
+        Returns a list of all singles.
+
+        Args:
+            event_id (str): WCA event ID, such as "222", "333", etc.
+        
+        Returns:
+            list[int]: All singles of event including DNFs.
+        """
+        event_result: List[Dict] = self.get_event_results(event_id)
+
+        if event_result == []:
+            return []
+        
+        singles_lists = chain(*[round_result.get("solves", []) for round_result in event_result])
+
+        return [s for s in singles_lists if s != 0]

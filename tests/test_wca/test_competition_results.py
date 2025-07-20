@@ -203,3 +203,20 @@ def test_get_best_single_by_round(competition_results_atl_cube_central, event_id
 def test_get_best_average_overall(competition_results_atl_cube_central, event_id, expected):
     assert competition_results_atl_cube_central.get_best_average_overall(event_id) == expected
 # fmt: on
+
+
+@pytest.mark.parametrize(
+    "event_id, expected",
+    [
+        ("333", [974, 1394, 2238, 1835, 1137, 1165, 1220, 1427, 1406, 1189]),
+        (
+            "222",
+            [500, 498, 501, 517, 561, 475, 550, 429, 591, 391, 561, 431, 502, 647, 431],
+        ),
+        ("555", [-1, -1, 4249, 4242, 4433]),
+        ("666", [-1, -1, -1, 16692, 16459, 13886]),
+        ("777", [])
+    ],
+)
+def test_get_all_singles(competition_results_atl_cube_central, event_id, expected):
+    assert competition_results_atl_cube_central.get_all_singles(event_id) == expected
