@@ -3,11 +3,10 @@ import sys
 
 import pytest
 
-sys.path.append(
-    Path(__file__).absolute().parent.parent.__str__()
-)
+sys.path.append(Path(__file__).absolute().parent.parent.__str__())
 
 from src.wca import WCAPerson
+from src.wca import CompetitionResults
 
 wca_data_atl: dict = {
     "id": "2015LUNA02",
@@ -400,6 +399,169 @@ wca_data_atl: dict = {
     "records": {"single": [], "average": []},
 }
 
+all_event_results_atl_sigi = {
+    "333": [
+        {
+            "round": "Second round",
+            "position": 11,
+            "best": 1480,
+            "average": 1543,
+            "format": "Average of 5",
+            "solves": [1800, 1522, 1611, 1497, 1480],
+        },
+        {
+            "round": "First round",
+            "position": 16,
+            "best": 1334,
+            "average": 1651,
+            "format": "Average of 5",
+            "solves": [1334, 1759, 1546, 1744, 1663],
+        },
+    ],
+    "222": [
+        {
+            "round": "Final",
+            "position": 10,
+            "best": 372,
+            "average": 550,
+            "format": "Average of 5",
+            "solves": [596, 709, 527, 527, 372],
+        },
+        {
+            "round": "First round",
+            "position": 14,
+            "best": 456,
+            "average": 555,
+            "format": "Average of 5",
+            "solves": [516, 456, 568, 684, 581],
+        },
+    ],
+    "444": [
+        {
+            "round": "Final",
+            "position": 5,
+            "best": 4772,
+            "average": 5325,
+            "format": "Average of 5",
+            "solves": [5490, 5105, 5381, 5631, 4772],
+        },
+        {
+            "round": "First round",
+            "position": 3,
+            "best": 4153,
+            "average": 4828,
+            "format": "Average of 5",
+            "solves": [4418, 5272, 4794, 5334, 4153],
+        },
+    ],
+}
+
+all_event_results_atl_cube_central = {
+    "333": [
+        {
+            "round": "Second round",
+            "position": 12,
+            "best": 974,
+            "average": 1455,
+            "format": "Average of 5",
+            "solves": [974, 1394, 2238, 1835, 1137],
+        },
+        {
+            "round": "First round",
+            "position": 5,
+            "best": 1165,
+            "average": 1272,
+            "format": "Average of 5",
+            "solves": [1165, 1220, 1427, 1406, 1189],
+        },
+    ],
+    "222": [
+        {
+            "round": "Final",
+            "position": 4,
+            "best": 498,
+            "average": 506,
+            "format": "Average of 5",
+            "solves": [500, 498, 501, 517, 561],
+        },
+        {
+            "round": "Second round",
+            "position": 4,
+            "best": 391,
+            "average": 485,
+            "format": "Average of 5",
+            "solves": [475, 550, 429, 591, 391],
+        },
+        {
+            "round": "First round",
+            "position": 7,
+            "best": 431,
+            "average": 498,
+            "format": "Average of 5",
+            "solves": [561, 431, 502, 647, 431],
+        },
+    ],
+    "444": [
+        {
+            "round": "Final",
+            "position": 2,
+            "best": 2991,
+            "average": 4196,
+            "format": "Average of 5",
+            "solves": [2991, 4098, 4249, 4242, 4433],
+        },
+        {
+            "round": "First round",
+            "position": 4,
+            "best": 3511,
+            "average": 4446,
+            "format": "Average of 5",
+            "solves": [4196, 5316, 4324, 3511, 4817],
+        },
+    ],
+    "555": [
+        {
+            "round": "Final",
+            "position": 10,
+            "best": 4242,
+            "average": -1,
+            "format": "Average of 5",
+            "solves": [-1, -1, 4249, 4242, 4433],
+        },
+    ],
+    "666": [
+        {
+            "round": "Final",
+            "position": 10,
+            "best": -1,
+            "average": -1,
+            "format": "Mean of 3",
+            "solves": [-1, -1, -1, 0, 0],
+        },
+        {
+            "round": "First round",
+            "position": 18,
+            "best": 13886,
+            "average": 15679,
+            "format": "Mean of 3",
+            "solves": [16692, 16459, 13886, 0, 0],
+        },
+    ],
+}
+
+
 @pytest.fixture
 def wca_person_atl() -> WCAPerson:
     return WCAPerson(wca_data_atl)
+
+
+@pytest.fixture
+def competition_results_atl_sigi() -> CompetitionResults:
+    return CompetitionResults("SIGI2015", all_event_results_atl_sigi)
+
+
+@pytest.fixture
+def competition_results_atl_cube_central() -> CompetitionResults:
+    return CompetitionResults(
+        "CubeCentralYucatan2024", all_event_results_atl_cube_central
+    )
