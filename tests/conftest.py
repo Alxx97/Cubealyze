@@ -7,7 +7,7 @@ sys.path.append(
     Path(__file__).absolute().parent.parent.__str__()
 )
 
-from src.wca.models.person import WCAPerson
+from src.wca import WCAPerson
 
 wca_data_atl: dict = {
     "id": "2015LUNA02",
